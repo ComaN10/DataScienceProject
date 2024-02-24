@@ -1,0 +1,12 @@
+Reduzir a morte de crianças é um objetivo importante da ONU, querendo que até 2030, todos os países evitem as mortes de recém-nascidos e
+crianças menores de 5 anos, buscando reduzir a mortalidade infantil para pelo menos 25 por 1.000 nascidos vivos.
+Além disso, há a preocupação com a mortalidade materna, que causou 295.000 mortes em 2017, principalmente em lugares com poucos recursos.
+Para lidar com isso, existem os Cardiotocogramas (CTGs), que são exames simples e acessíveis para avaliar a saúde fetal, ajudando a prevenir
+mortes de crianças e mães. Esses exames, feitos com ultrassom, fornecem informações sobre a frequência cardíaca fetal, movimentos do bebê,
+contrações uterinas, entre outros.
+O conjunto de dados compreende 2126 registros desses exames, e os obstetras os classificaram em três categorias:
+->Normal: Indica que o exame mostra padrões de saúde fetal considerados normais e não levanta preocupações significativas.
+->Suspeito: Sugere que o exame apresenta características que podem indicar possíveis preocupações com a saúde fetal. Pode exigir monitoramento
+adicional.
+->Patológico: Indica que o exame revela padrões que levantam sérias preocupações sobre a saúde fetal, exigindo atenção e ação imediatas por
+parte dos profissionais de saúde.
