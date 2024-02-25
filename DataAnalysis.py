@@ -65,14 +65,13 @@ class DataAnalysis:
         Classe responsible for showing up the data, making it easier to analyze data sparsity, distribution, ... TODO: add docstring
     """
 
-    def __init__(self,file="fetal_health.csv",target="fetal_health"):
+    def __init__(self,file="fetal_health.csv"):
         """
             Initialize the object with the data from the file
             :param file: name of the csv file to load and analise. Default is fetal_health.csv
         """
         self.file = file
         self.dataset = pd.read_csv(self.file)
-        self.target = target
 
     def save_as_csv(self) -> None:
         """
@@ -96,6 +95,7 @@ class DataAnalysis:
     def pre_process(self, ignore: list):
         """
             Removes duplicated, Remove null values, normalize, standardization
+            :param ignore: list of features to ignore
             :return None:
         """
         self.remove_duplicates()
@@ -144,7 +144,7 @@ class DataAnalysis:
         """
             Applies standardization to each column of the dataset
             and replaces the actual feature data with the standardized data.
-            :param ingnore: features to not do normalization
+            :param ingnore: features to not do standardization
             :return None:
         """
 
@@ -230,7 +230,7 @@ class DataAnalysis:
                     if plot_type == 'hist':
                         ax.hist(feature_data, bins=hist_bins, alpha=0.25)
                         # Set plot labels
-                        ax.set_xlabel(f'{feature}')
+                        ax.set_xlabel(f'Class')
                         ax.set_ylabel(f'Frequency')
 
                     elif plot_type == 'violin' and target != "":
