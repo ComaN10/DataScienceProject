@@ -6,7 +6,7 @@ if __name__ == '__main__':
 
     data_analyze.show_datainfo()
 
-    data_analyze.pre_process()
+    data_analyze.pre_process(["fetal_health"])
 
     data_analyze.plot_features([
         PlotTypes().hist(),

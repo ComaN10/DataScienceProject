@@ -72,6 +72,7 @@ class DataAnalysis:
         """
         self.file = file
         self.dataset = pd.read_csv(self.file)
+        self.target = target
 
     def save_as_csv(self) -> None:
         """
@@ -92,15 +93,16 @@ class DataAnalysis:
         self.describe()
         print()
 
-    def pre_process(self):
+    def pre_process(self, ignore: list):
         """
             Removes duplicated, Remove null values, normalize, standardization
             :return None:
         """
         self.remove_duplicates()
         self.remove_null_values()
-        self.normalize()
-        self.standardization()
+        self.normalize(ignore)
+        self.standardization(ignore)
+
 
     def remove_duplicates(self) -> None:
         """
@@ -120,27 +122,37 @@ class DataAnalysis:
         self.dataset.dropna(inplace=True)
         print("Count after drop rows with null values ", len(self.dataset))
 
-    def normalize(self) -> None:
+    def normalize(self,ignore: list) -> None:
         """
             Applies min/max normalization to each column of the dataset
             and replaces the actual feature data with the normalized data.
             The result data is between 0 and 1.
+            :param ignore: features to not do normalization
             :return None:
         """
 
         for column in self.dataset.columns:
+
+            if (column in ignore):
+                continue
+
             min_value = self.dataset[column].min()
             max_value = self.dataset[column].max()
             self.dataset[column] = (self.dataset[column] - min_value) / (max_value - min_value)
 
-    def standardization(self) -> None:
+    def standardization(self,ignore: list) -> None:
         """
             Applies standardization to each column of the dataset
             and replaces the actual feature data with the standardized data.
+            :param ingnore: features to not do normalization
             :return None:
         """
 
         for column in self.dataset.columns:
+
+            if(column in ignore):
+                continue
+
             mean = self.dataset[column].mean()
             std = self.dataset[column].std()
             self.dataset[column] = (self.dataset[column] - mean) / std
