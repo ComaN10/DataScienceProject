@@ -37,12 +37,13 @@ class ModelSelection:
         # tail of the distribution is longer or fatter than the left tail. If it lower
         # than 0 it indicates the oposite
         df['row_skewness'] = df.skew(axis=1)
+        #Calculate the Kurtosis by row
+        df['row_kurtosis'] = df.kurtosis(axis=1)
         # Define the bins and labels for the categorical binning
         bins = [0, 50, 100, 150, float('inf')]  # Adjust the bin edges as needed
         labels = ['Low', 'Medium', 'High', 'Very High']
         # Perform categorical binning for a specific column, e.g., 'accelerations'
         df['accelerations_category'] = pd.cut(df['accelerations'], bins=bins, labels=labels, include_lowest=True)
-
         # Display the DataFrame with the new 'bmi' feature
         print(df)
 
