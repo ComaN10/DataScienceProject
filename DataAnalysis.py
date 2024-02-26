@@ -3,6 +3,9 @@ import pandas as pd
 import numpy as np
 import itertools
 import math
+import seaborn as sns
+
+#for visualization balancing preservation of both local and global structures
 
 # Plotting
 import matplotlib.pyplot as plt
@@ -65,13 +68,20 @@ class DataAnalysis:
         Classe responsible for showing up the data, making it easier to analyze data sparsity, distribution, ... TODO: add docstring
     """
 
-    def __init__(self,file="fetal_health.csv"):
+    def __init__(self,file="fetal_health.csv",target_name="fetal_health"):
         """
             Initialize the object with the data from the file
             :param file: name of the csv file to load and analise. Default is fetal_health.csv
         """
         self.file = file
         self.dataset = pd.read_csv(self.file)
+        self.target_name = target_name
+
+    def get_targets(self):
+        """
+            :return target feature Series DataFrame[target_name]:
+        """
+        return self.dataset[self.target_name]
 
     def save_as_csv(self) -> None:
         """
@@ -92,7 +102,7 @@ class DataAnalysis:
         self.describe()
         print()
 
-    def pre_process(self, ignore: list):
+    def pre_process(self, ignore: list = []):
         """
             Removes duplicated, Remove null values, normalize, standardization
             :param ignore: list of features to ignore
@@ -122,7 +132,7 @@ class DataAnalysis:
         self.dataset.dropna(inplace=True)
         print("Count after drop rows with null values ", len(self.dataset))
 
-    def normalize(self,ignore: list) -> None:
+    def normalize(self,ignore: list = []) -> None:
         """
             Applies min/max normalization to each column of the dataset
             and replaces the actual feature data with the normalized data.
@@ -140,7 +150,7 @@ class DataAnalysis:
             max_value = self.dataset[column].max()
             self.dataset[column] = (self.dataset[column] - min_value) / (max_value - min_value)
 
-    def standardization(self,ignore: list) -> None:
+    def standardization(self,ignore: list = []) -> None:
         """
             Applies standardization to each column of the dataset
             and replaces the actual feature data with the standardized data.
@@ -157,6 +167,14 @@ class DataAnalysis:
             std = self.dataset[column].std()
             self.dataset[column] = (self.dataset[column] - mean) / std
 
+    def view_features_pairwyse(self) -> None:
+        """
+            Prints each feature pairwyse
+            :return None:
+        """
+        plt.figure()  # Create a new figure
+        sns.pairplot(self.dataset, hue=self.target_name, markers='o')
+        plt.show()
 
     def describe(self) -> None:
         """
