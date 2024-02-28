@@ -43,9 +43,9 @@ class FeatureEngineering:
         # Perform categorical binning for a specific column, e.g., 'accelerations'
         df['accelerations_category'] = pd.cut(df['accelerations'], bins=bins, labels=labels, include_lowest=True)
         # Display the DataFrame with the new 'bmi' feature
-        print(df['mean_value_of_long_term_variability'])
-
-
+        df_except_last = df.iloc[:, :-1]
+        df['sum_rows']=df_except_last.sum(axis=1)
+        print(df['sum_rows'].describe())
         print(df)
 
 
