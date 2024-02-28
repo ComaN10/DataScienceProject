@@ -17,7 +17,7 @@ class FeatureEngineering:
         # Interaction between "Uterine Contractions" and "Fetal Movement,"
         df['interaction_uterine_fetal'] = df['uterine_contractions'] * df['fetal_movement']
         #Interaction between "Fetal Movement" and "accelerations"
-        df['interaction_movment_accelerations']=df['accelerations'] * df['fetal_movement']
+        df['interaction_movment_accelerations']=df['fetal_movement'] * df['accelerations']
         # Calculate and store the rolling mean of 'accelerations' with a specified time window.
         df['rolling_mean_accelerations'] = df['accelerations'].rolling(window=time_window).mean()
         # Calculate the mean by row
@@ -30,8 +30,6 @@ class FeatureEngineering:
         df['row_max'] = df.max(axis=1)
         # Calculate the variance by row
         df['row_variance'] = df.var(axis=1)
-        # Calculate the mode by row
-        row_modes = df.mode(axis=1)
         # Calculate the Skewness by row
         # If skewness is greater than 0, it indicates that the right
         # tail of the distribution is longer or fatter than the left tail. If it lower
@@ -45,7 +43,8 @@ class FeatureEngineering:
         # Perform categorical binning for a specific column, e.g., 'accelerations'
         df['accelerations_category'] = pd.cut(df['accelerations'], bins=bins, labels=labels, include_lowest=True)
         # Display the DataFrame with the new 'bmi' feature
-        df['LogMeanValue'] = np.log10(df['mean_value_of_long_term_variability'])
+        print(df['mean_value_of_long_term_variability'])
+
 
         print(df)
 
