@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
+import math
 pd.set_option('display.max_columns', None)  # Ensure all columns are displayed
 
 
-class ModelSelection:
+class FeatureEngineering:
     """
         Classe responsible for showing up the data, making it easier to analyze data sparsity, distribution, ... TODO: add docstring
     """
@@ -30,8 +31,6 @@ class ModelSelection:
         df['row_variance'] = df.var(axis=1)
         # Calculate the mode by row
         row_modes = df.mode(axis=1)
-        # Extract the first mode for each row
-        df['row_mode'] = row_modes.iloc[:, 0]
         # Calculate the Skewness by row
         # If skewness is greater than 0, it indicates that the right
         # tail of the distribution is longer or fatter than the left tail. If it lower
@@ -45,6 +44,8 @@ class ModelSelection:
         # Perform categorical binning for a specific column, e.g., 'accelerations'
         df['accelerations_category'] = pd.cut(df['accelerations'], bins=bins, labels=labels, include_lowest=True)
         # Display the DataFrame with the new 'bmi' feature
+        df['LogMeanValue'] = np.log10(df['mean_value_of_long_term_variability'])
+
         print(df)
 
 
