@@ -7,7 +7,12 @@ if __name__ == '__main__':
     data_analyze = DataAnalysis()
 
     # wheel print 253 graphs
-    # #data_analyze.view_features_pairwyse()
+    # #data_analyze.view_features_pairwyse()´
+    # data_analyze = DataAnalysis()
+    # data_analyze.show_datainfo()
+    # data_analyze.plot_features([PlotTypes().hist()])
+    #model_selection = FeatureEngineering()
+    #model_selection.FeatureAdd()
 
     data_analyze.show_datainfo()
 
