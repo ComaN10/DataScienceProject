@@ -16,9 +16,10 @@ class FeatureEngineering:
         time_window = 3
         # Interaction between "Uterine Contractions" and "Fetal Movement,"
         df['interaction_uterine_fetal'] = df['uterine_contractions'] * df['fetal_movement']
-
+        #Interaction between "Fetal Movement" and "accelerations"
+        df['interaction_movment_accelerations']=df['accelerations'] * df['fetal_movement']
+        # Calculate and store the rolling mean of 'accelerations' with a specified time window.
         df['rolling_mean_accelerations'] = df['accelerations'].rolling(window=time_window).mean()
-        df['rolling_std_decels'] = df['severe_decelerations'].rolling(window=time_window).std()
         # Calculate the mean by row
         df['row_mean'] = df.mean(axis=1)
         # Calculate the median by row
