@@ -1,18 +1,19 @@
 from DataAnalysis import DataAnalysis, PlotTypes
 from DimensionalityReduction import DimensionalityReduction
-from sklearn.datasets import load_iris
+from FeaturingEngineering import FeatureEngineering
+
 
 if __name__ == '__main__':
 
     data_analyze = DataAnalysis()
+    my_feature_engineering = FeatureEngineering(data_analyze)
+    my_feature_engineering.create_all_features()
 
     # wheel print 253 graphs
     # #data_analyze.view_features_pairwyse()´
     # data_analyze = DataAnalysis()
     # data_analyze.show_datainfo()
-    # data_analyze.plot_features([PlotTypes().hist()])
-    #model_selection = FeatureEngineering()
-    #model_selection.FeatureAdd()
+    # data_analyze.plot_features([PlotTypes().hist()]
 
     data_analyze.show_datainfo()
 
