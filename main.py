@@ -6,8 +6,12 @@ from FeaturingEngineering import FeatureEngineering
 if __name__ == '__main__':
 
     data_analyze = DataAnalysis()
-    my_feature_engineering = FeatureEngineering(data_analyze)
-    my_feature_engineering.create_all_features()
+
+    # creating features
+    data_analyze.print_outliers_info(
+        ignore=[data_analyze.target_name, "accelerations_category", "fetal_movement_category"], severe_outliers=4)
+
+    data_analyze.dataset = FeatureEngineering.create_features(data_analyze.dataset, [data_analyze.target_name])
 
     # wheel print 253 graphs
     # #data_analyze.view_features_pairwyse()´
@@ -17,23 +21,25 @@ if __name__ == '__main__':
 
     data_analyze.show_datainfo()
 
-    data_analyze.pre_process(ignore=[data_analyze.target_name])
+    data_analyze.pre_process(
+        ignore=[data_analyze.target_name, "accelerations_category", "fetal_movement_category"])
 
     data_analyze.plot_features([
         PlotTypes().hist(),
         PlotTypes().violin(),
-        PlotTypes().box(),
-        PlotTypes().scatter(),
+        #PlotTypes().box(),
+        #PlotTypes().scatter(),
         # PlotTypes().lines(), is not usefully
-        PlotTypes().bar(),
-        PlotTypes().lollypop()
-    ],hist_number_of_bars_func=PlotTypes.hist_scots,columns=4,plot_size=5)
+        #PlotTypes().bar(),
+        #PlotTypes().lollypop()
+    ],hist_number_of_bars_func=PlotTypes.hist_scots, columns=6, plot_size=15)
+
+
 
     DimensionalityReduction = DimensionalityReduction(data_analyze.dataset, data_analyze.get_targets(), standardized=True)
-    DimensionalityReduction.plot_projection(DimensionalityReduction.compute_pca(2), "PCA")
-    DimensionalityReduction.plot_projection(DimensionalityReduction.compute_lda(2), "LDA2")
-    DimensionalityReduction.plot_projection(DimensionalityReduction.compute_tsne(2), "TSNE")
-    DimensionalityReduction.plot_projection(DimensionalityReduction.compute_lle(2), "lle")
-    DimensionalityReduction.plot_projection(DimensionalityReduction.compute_umap(2), "umap")
-
-    #data_analyze.feature engeneering
+    DimensionalityReduction.plot_all_3d()
+    # DimensionalityReduction.plot_projection(DimensionalityReduction.compute_pca(2), "PCA")
+    # DimensionalityReduction.plot_projection(DimensionalityReduction.compute_lda(2), "LDA")
+    # DimensionalityReduction.plot_projection(DimensionalityReduction.compute_tsne(3), "TSNE")
+    # DimensionalityReduction.plot_projection(DimensionalityReduction.compute_lle(2), "LLE")
+    # DimensionalityReduction.plot_projection(DimensionalityReduction.compute_umap(2), "UMAP")

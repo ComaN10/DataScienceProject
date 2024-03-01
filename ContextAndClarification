@@ -19,7 +19,7 @@ DataBase base features:
 Feature - meaning
 baseline value  - Baseline Fetal Heart Rate (FHR)
 accelerations   - Number of accelerations per second
-fetal movement  - Number of fetal movements per second
+fetal_movement - Number of fetal movements per second
 uterine_contractions    - Number of uterine contractions per second
 light_decelerations     - Number of LDs per second
 severe_decelerations    - Number of SDs per second #drop
@@ -40,4 +40,3 @@ histogram_median - Hist Median
 histogram_variance - Hist variance
 histogram_tendency - Histogram trend
 fetal_health - Fetal health: 1 - Normal 2 - Suspect 3 - Pathological
-

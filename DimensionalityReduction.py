@@ -11,6 +11,9 @@ from sklearn.manifold import LocallyLinearEmbedding
 # for visualization balancing preservation of both local and global structures
 
 from sklearn.preprocessing import StandardScaler
+
+import plotly.graph_objs as go
+import itertools
 import umap
 
 
@@ -101,3 +104,48 @@ class DimensionalityReduction:
         plt.ylabel('Component 2')
         plt.grid(True)
         plt.show()
+
+    def plot_all_3d(self):
+        """
+            Plot 3D scatter plots for each combination of three features using Plotly.
+        """
+
+        if len(self.data.columns) < 3:
+            raise ValueError("This method requires at least three features to plot in 3D.")
+
+        # Produce all possible unique combinations of three features
+        feature_combinations = itertools.combinations(self.data.columns, 3)
+        itera = 0
+        # Do a plot for each possible combination of three features
+        for combination in feature_combinations:
+
+            if itera > 5:
+                break
+
+            itera += 1
+
+            trace = go.Scatter3d(
+                x=self.data[combination[0]],
+                y=self.data[combination[1]],
+                z=self.data[combination[2]],
+                mode='markers',
+                marker=dict(
+                    size=10,
+                    color=self.targets,
+                    colorscale='Viridis',
+                    opacity=0.8
+                )
+            )
+
+            # Define the layout of the plot presentation
+            layout = go.Layout(
+                scene=dict(
+                    xaxis=dict(title=combination[0]),
+                    yaxis=dict(title=combination[1]),
+                    zaxis=dict(title=combination[2])
+                ),
+                margin=dict(l=0, r=0, b=0, t=0)
+            )
+
+            fig = go.Figure(data=[trace], layout=layout)
+            fig.show()

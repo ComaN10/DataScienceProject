@@ -98,8 +98,11 @@ class DataAnalysis:
         print("Info")
         self.info()
         print()
-        print("Description")
+        print("\nDescription")
         self.describe()
+        print()
+        print("\nCorrelation")
+       # print(self.dataset.corr())
         print()
 
     def pre_process(self, ignore: list = []):
@@ -167,6 +170,72 @@ class DataAnalysis:
             std = self.dataset[column].std()
             self.dataset[column] = (self.dataset[column] - mean) / std
 
+    def identify_outliers(self,ignore: list = [], outliers=1.5, severe_outliers=3.0) -> pd.DataFrame:
+        """
+            Identifies outliers in the loaded DataFrame
+            :param ignore: list of columns to ignore outliers
+            :param outliers: value used to identify outliers
+            :param severe_outliers: value used to identify severe outliers
+            :return outliers,severe_outliers,dataFrame:
+                outliers: number of outliers
+                severe_outliers: number of severe outliers
+                dict: a dicionary containing an lits of dicionarys {"i":i, "value":value ,"severe"} per feature of the dataset
+                    that are outliers
+        """
+
+        dict = {}
+        count_outliers = 0
+        count_outliers_severe = 0
+        for column in self.dataset.columns:
+
+            if (column in ignore):
+                continue
+
+            # calculate quantiles and limits per feture
+            quantiles = self.dataset[column].quantile([0.25,0.75])
+            diference = quantiles[0.75] - quantiles[0.25]
+            min_outliers = quantiles[0.25] - diference * outliers
+            min_severe_outliers = quantiles[0.25] - diference * severe_outliers
+            max_outliers = quantiles[0.75] + diference * outliers
+            max_severe_outliers = quantiles[0.75] + diference * severe_outliers
+
+            column_name =  column + "_ouliers"
+            dict[column_name] = list()
+
+            i = 0
+            for value in self.dataset[column]:
+
+                # check if it is outliers
+                if(value < min_outliers or value > max_outliers):
+                    count_outliers += 1
+                    # check if it is severe
+                    if value < min_severe_outliers or value > max_severe_outliers:
+                        count_outliers_severe += 1
+                        dict[column_name].append({"i": i,"value": value,"severe": True})
+                    else:
+                        dict[column_name].append({"i": i,"value": value,"severe": False})
+                i += 1
+
+        return count_outliers,count_outliers_severe,dict
+
+    def print_outliers_info(self,ignore: list = [], outliers=1.5, severe_outliers=3.0) -> None:
+        """
+            Calculates and prints out the outliers
+            Identifies outliers in the loaded DataFrame
+            :param ignore: list of columns to ignore outliers
+            :param outliers: value used to identify outliers
+            :param severe_outliers: value used to identify severe outliers
+            :return None:
+        """
+
+        outliers, severe_outliers, data = self.identify_outliers(ignore=ignore, outliers=outliers, severe_outliers=severe_outliers)
+        print("number of outliers: ", outliers, " of " , self.getNumberOfValues() ,
+              " ", (outliers/self.getNumberOfValues()) * 100  , " %" , " severe: ", severe_outliers)
+        for key in data.keys():
+            print( key, len(data[key]) )
+        print()
+
+
     def view_features_pairwyse(self) -> None:
         """
             Prints each feature pairwyse
@@ -183,25 +252,25 @@ class DataAnalysis:
         """
         print(self.dataset.describe())
 
-        # for colum in self.dataset.columns:
-        #
-        #     print("Feature ",colum)
-        #     values = self.dataset[colum]
-        #     print("mean ", values.mean())
-        #     print("median ", values.median())
-        #     print("std ", values.std())
-        #     print("min ", values.min())
-        #     print("max ", values.max())
-        #     print("Q25 ", values.quantile(0.25))
-        #     print("Q50 ", values.quantile(0.50))
-        #     print("Q75 ", values.quantile(0.75), end="\n\n")
-
     def info(self) -> None:
         """
             Print information about the loaded dataset
             :return None:
         """
         self.dataset.info()
+
+    def correlations(self) -> None:
+        """
+            Print correlaion of each feature of the loaded dataset
+            :return None:
+        """
+        self.dataset.corr()
+
+    def getNumberOfValues(self):
+        """
+            :return number of values in the loaded dataset:
+        """
+        return len(self.dataset) * len(self.dataset.columns)
 
     def plot_features(self, plot_types: list, columns=4, hist_number_of_bars_func=lambda x: 10, plot_size=5) -> None:
         """
