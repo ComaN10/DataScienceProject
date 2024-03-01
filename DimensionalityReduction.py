@@ -105,7 +105,7 @@ class DimensionalityReduction:
         plt.grid(True)
         plt.show()
 
-    def plot_all_3d(self):
+    def plot_3d_combinations(self, begin,end):
         """
             Plot 3D scatter plots for each combination of three features using Plotly.
         """
@@ -113,14 +113,24 @@ class DimensionalityReduction:
         if len(self.data.columns) < 3:
             raise ValueError("This method requires at least three features to plot in 3D.")
 
+        if begin < 0 or end < 0:
+            raise ValueError("This method requires begin >= 0 , end > begin")
+
+        if end <= begin:
+            raise ValueError("his method requires end > begin")
+
         # Produce all possible unique combinations of three features
         feature_combinations = itertools.combinations(self.data.columns, 3)
         itera = 0
         # Do a plot for each possible combination of three features
         for combination in feature_combinations:
 
-            if itera > 5:
+            if itera == end:
                 break
+            elif itera < begin:
+                continue
+
+            print("Ploting ", itera, )
 
             itera += 1
 

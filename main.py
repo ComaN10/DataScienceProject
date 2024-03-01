@@ -34,10 +34,8 @@ if __name__ == '__main__':
         #PlotTypes().lollypop()
     ],hist_number_of_bars_func=PlotTypes.hist_scots, columns=6, plot_size=15)
 
-
-
     DimensionalityReduction = DimensionalityReduction(data_analyze.dataset, data_analyze.get_targets(), standardized=True)
-    DimensionalityReduction.plot_all_3d()
+    DimensionalityReduction.plot_3d_combinations(10, 15)
     # DimensionalityReduction.plot_projection(DimensionalityReduction.compute_pca(2), "PCA")
     # DimensionalityReduction.plot_projection(DimensionalityReduction.compute_lda(2), "LDA")
     # DimensionalityReduction.plot_projection(DimensionalityReduction.compute_tsne(3), "TSNE")
