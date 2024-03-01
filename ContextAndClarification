@@ -1,12 +1,42 @@
 Reduzir a morte de crianças é um objetivo importante da ONU, querendo que até 2030, todos os países evitem as mortes de recém-nascidos e
-crianças menores de 5 anos, buscando reduzir a mortalidade infantil para pelo menos 25 por 1.000 nascidos vivos.
+crianças menores de 5 anos, buscando reduzir a mortalidade infantil para pelo menos 25 por 1.000 nascidos.
 Além disso, há a preocupação com a mortalidade materna, que causou 295.000 mortes em 2017, principalmente em lugares com poucos recursos.
 Para lidar com isso, existem os Cardiotocogramas (CTGs), que são exames simples e acessíveis para avaliar a saúde fetal, ajudando a prevenir
-mortes de crianças e mães. Esses exames, feitos com ultrassom, fornecem informações sobre a frequência cardíaca fetal, movimentos do bebê,
-contrações uterinas, entre outros.
-O conjunto de dados compreende 2126 registros desses exames, e os obstetras os classificaram em três categorias:
-->Normal: Indica que o exame mostra padrões de saúde fetal considerados normais e não levanta preocupações significativas.
-->Suspeito: Sugere que o exame apresenta características que podem indicar possíveis preocupações com a saúde fetal. Pode exigir monitoramento
-adicional.
-->Patológico: Indica que o exame revela padrões que levantam sérias preocupações sobre a saúde fetal, exigindo atenção e ação imediatas por
-parte dos profissionais de saúde.
+mortes de crianças e mães. Esses exames, feitos com ultrassom, fornecem informações sobre a frequência cardíaca fetal,
+movimentos do bebê,contrações uterinas, entre outros.
+Objetivos:
+
+Produzir um modelo que permite classifiar um feto como
+(1) -   Normal: Indica que o exame mostra padrões de saúde fetal considerados normais e não levanta preocupações significativas.
+(2) -   Suspeito: Sugere que o exame apresenta características que podem indicar possíveis preocupações com a saúde fetal.
+        Pode exigir monitoramento adicional.
+(3) -   Patológico: Indica que o exame revela padrões que levantam sérias preocupações sobre a saúde fetal, exigindo atenção e
+        ação imediatas por parte dos profissionais de saúde.
+utilizando o conjunto de dados compreende 2126 registros de exames acima descritos.
+
+DataBase base features:
+
+Feature - meaning
+baseline value  - Baseline Fetal Heart Rate (FHR)
+accelerations   - Number of accelerations per second
+fetal_movement - Number of fetal movements per second
+uterine_contractions    - Number of uterine contractions per second
+light_decelerations     - Number of LDs per second
+severe_decelerations    - Number of SDs per second #drop
+prolongued_decelerations    - Number of PDs per second
+abnormal_short_term_variability - Percentage of time with abnormal short term variability
+mean_value_of_short_term_variability - Mean value of short term variability
+percentage_of_time_with_abnormal_long_term_variability - Mean value of short term variability
+mean_value_of_long_term_variability - Percentage of time with abnormal long term variability
+
+histogram_width - Width of the histogram made using all values from a record
+histogram_min - Histogram minimum value
+histogram_max - Histogram maximum value
+histogram_number_of_peaks - Number of peaks in the exam histogram
+histogram_number_of_zeroes - Number of zeroes in the exam histogram
+histogram_mode - Hist mode
+histogram_mean - Hist mean
+histogram_median - Hist Median
+histogram_variance - Hist variance
+histogram_tendency - Histogram trend
+fetal_health - Fetal health: 1 - Normal 2 - Suspect 3 - Pathological
