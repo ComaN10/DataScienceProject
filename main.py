@@ -19,7 +19,7 @@ if __name__ == '__main__':
     # data_analyze.plot_features([PlotTypes().hist()]
 
     #data_analyze.show_datainfo()
-    #data_analyze.show_correlations_heatmap()
+    data_analyze.show_correlations_heatmap()
 
     data_analyze.pre_process(
         ignore=[data_analyze.target_name, "accelerations_category", "fetal_movement_category"]

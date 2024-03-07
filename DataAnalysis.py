@@ -5,8 +5,6 @@ import itertools
 import math
 import seaborn as sns
 
-#for visualization balancing preservation of both local and global structures
-
 # Plotting
 import matplotlib.pyplot as plt
 pd.set_option('display.max_columns', None)  # Ensure all columns are displayed
@@ -84,12 +82,12 @@ class DataAnalysis:
         """
         return self.dataset[self.target_name]
 
-    def save_as_csv(self) -> None:
+    def save_as_csv(self,file) -> None:
         """
             Save the data as a csv file
             :return:
         """
-        self.dataset.to_csv(self.file)
+        self.dataset.to_csv(file)
 
     def show_datainfo(self) -> None:
         """
@@ -111,7 +109,7 @@ class DataAnalysis:
         correlation_matrix = self.dataset.corr()
         size = len(self.dataset.columns) * cellsize +2
         plt.figure(figsize=(size, size))
-        sns.heatmap(correlation_matrix, annot=False, cmap='coolwarm', fmt=".2f" ,center=True)
+        sns.heatmap(correlation_matrix, annot=False, cmap='coolwarm', fmt=".2f")
         plt.title('Correlation Heatmap')
         plt.show()
 
