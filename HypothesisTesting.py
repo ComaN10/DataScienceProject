@@ -1,12 +1,12 @@
-import numpy as np
 import pandas as pd
-from DataAnalysis import DataAnalysis
+import numpy as np
 from scipy.stats import ttest_ind, f_oneway, ttest_rel, wilcoxon, kruskal, friedmanchisquare, probplot, shapiro
 import statsmodels.api as sm
 import statsmodels.stats.api as sms
 from statsmodels.formula.api import ols
-
 import matplotlib.pyplot as plt
+
+from DataAnalysis import DataAnalysis
 
 
 class HypothesisTester:
@@ -15,7 +15,293 @@ class HypothesisTester:
     unpaired t-test) or within groups (for paired t-test).
     The ANOVA test assumes that the data is normally distributed and that the variances are equal between groups.
     """
-    def unpaired_t_test(self, group1, group2):
+
+    @classmethod
+    def test_normal_distribution(cls, groups, group_names) -> bool:
+        """
+            Tests if the feature is normally distributed validating p_value and statistic
+            :param groups:
+            :param group_names:
+            :return:True if the feature is normally distributed
+        """
+
+        cls.qq_plots(group_names, *groups)
+        print("Normality tests results (numbers):")
+        result_dic = cls.test_normality(group_names, *groups)
+        print()
+
+        print("Normality tests results:")
+        result = True
+        for key, sp_result in result_dic.items():
+            # H0 is normal distributed H1 is not normal distributed
+            hypothesis_result = not HypothesisTester.validate_p_value(sp_result[1]) and cls.validate_p_value(sp_result[0])
+            result = result and hypothesis_result
+            print(key, hypothesis_result)
+
+        print()
+        result_text = "normal" if result else "not normal"
+        print(f"Normality test final result: {result_text}")
+        return result
+
+    @classmethod
+    def test_hypothesis_single_feature(cls, groups: list, group_names: list, hypothesis: str = "",
+                                       homogeneity_variances: bool = True, similar_distribution: bool = True, independence: bool = True,
+                                       min_stc: float = 0.8, a: float = 0.05) -> bool:
+        """
+            Uses the corresponding hypothesis tests according to the normality tests.
+            :param groups:
+            :param group_names:
+            :param hypothesis:String with the hypothesis
+            :param homogeneity_variances:if groups have a homogeneity variance (== or very close)
+            :param similar_distribution:if groups have a similar distribution (== or very close)
+            :param independence:The observations between the two groups should also be independent of each other.
+            :param min_stc:minium acceptable statistical value
+            :param a:significance level
+            :return:True if hypothesis is H1 (null is to be rejected), False otherwise
+        """
+
+        hypothesis = hypothesis if (len(hypothesis) != 0) else "null hypothesis."
+        print(f"Testing {hypothesis}")
+
+        if cls.test_normal_distribution(groups, group_names):
+            reject = cls._test_hypothesis_single_feature_normal(groups, group_names, homogeneity_variances, similar_distribution, independence, min_stc, a)
+        else:
+            reject = cls._test_hypothesis_single_feature_not_normal(groups,homogeneity_variances, independence, min_stc, a)
+
+        result = "Reject" if reject else "Not Reject"
+        print(f"{result} the {hypothesis}")
+        return reject
+
+    @classmethod
+    def _test_hypothesis_single_feature_normal(cls, groups: list, groups_names: list, homogeneity_variances: bool = True,
+                                               similar_distribution: bool = True, independence: bool = True,
+                                               min_stc: float = 0.8, a: float = 0.05) -> bool:
+        """
+            Computes unpaired_anova, paired_anova, unpaired_anova assuming and validates de resulted statistic and p_value.
+            By default, that groups have homogeneity_variances and similar_distribution and follows a normal distribution.
+            :param groups:List of groups that belong to the same feature but have different classifications
+            :param groups_names:
+            :param homogeneity_variances:if groups have a homogeneity variance (== or very close)
+            :param similar_distribution:if groups have a similar distribution (== or very close)
+            :param independence:The observations between the two groups should also be independent of each other.
+            :param min_stc:minium acceptable statistical value
+            :param a:significance level
+            :return:True if hypothesis is H1 (null is to be rejected), False otherwise
+        """
+
+        if homogeneity_variances:
+
+            try:
+                data = pd.DataFrame({
+                    'value': np.concatenate(groups),
+                    'condition': np.repeat(groups_names, len(groups[0]))
+                })
+                statistic, p_value = cls.paired_anova(data)
+                result = cls.validate_hypothesis("paired_anova", statistic, p_value, a=a, min_stc=min_stc)
+            except Exception as e:
+                print("Error: in paired_anova", e)
+                result = True
+
+            if similar_distribution:
+                statistic, p_value = cls.unpaired_anova(*groups)
+                r = cls.validate_hypothesis("unpaired_anova", statistic, p_value, a=a, min_stc=min_stc)
+                result = result and r
+            else:
+                print("Group do not have the necessary pre-requirement similar_distribution for unpaired_anova.")
+        else:
+            print("Group do not have the necessary pre-requirement homogeneity_variances for paired_anova and unpaired_anova.")
+            result = True
+
+        if similar_distribution and independence:
+            try:
+                statistic, p_value = cls.friedman_test(*groups)
+                r = cls.validate_hypothesis("friedman_test", statistic, p_value, a=a, min_stc=min_stc)
+                result = result and r
+            except Exception as e:
+                print("Error in friedman_test:", e)
+        else:
+            print("Group do not have the necessary pre-requirements homogeneity variances and similar_distribution for friedman_test.")
+
+        return result
+
+    @classmethod
+    def _test_hypothesis_single_feature_not_normal(cls, groups: list, homogeneity_variances: bool = True,
+                                                   independence: bool = True, min_stc: float = 0.8,
+                                                   a: float = 0.05) -> bool:
+        """
+            Computes kruskal_wallis_test. By default, that groups have homogeneity_variances and independence.
+            :param groups:
+            :param homogeneity_variances:if groups have a homogeneity variance (== or very close)
+            :param independence:if Groups are independent of each other
+            :param min_stc:minium acceptable statistical value
+            :param a:significance level
+            :return:True if hypothesis is H1 (null is to be rejected), False otherwise
+        """
+
+        if independence and homogeneity_variances:
+            statistic, p_value = cls.kruskal_wallis_test(*groups)
+            return cls.validate_hypothesis("kruskal_wallis_test", statistic, p_value, a=a, min_stc=min_stc)
+        else:
+            print("Group do not have the necessary pre-requirements homogeneity variances and independence")
+            return False
+
+    @classmethod
+    def test_hypothesis_between_feature(cls, group1: any, group1_name: str, group2: any, group2_name: str, hypothesis: str = "",
+                                        homogeneity_variances: bool = True, independence: bool = True,
+                                        min_stc: float = 0.8, a: float = 0.05) -> bool:
+        """
+            :param group1:
+            :param group1_name:
+            :param group2:
+            :param group2_name:
+            :param hypothesis:String with the hypothesis
+            :param homogeneity_variances:if groups have a homogeneity variance (== or very close)
+            :param independence:The observations between the two groups should also be independent of each other.
+            :param min_stc:
+            :param a:
+            :return:True if hypothesis is H1 (null is to be rejected), False otherwise
+        """
+
+        hypothesis = hypothesis if (len(hypothesis) != 0) else "null hypothesis."
+        print(f"Testing {hypothesis}")
+
+        if cls.test_normal_distribution([group1, group2], [group1_name, group2_name]):
+            reject = cls._test_hypothesis_between_feature_normal(group1, group2, homogeneity_variances, independence, a, min_stc)
+        else:
+            reject = True
+
+        r = cls._test_hypothesis_between_feature_independent_of_dist(group1, group2, homogeneity_variances, independence, a, min_stc)
+        reject = reject and r
+
+        result = "Reject" if reject else "Not Reject"
+        print(f"{result} the {hypothesis}")
+
+        return reject
+
+    @classmethod
+    def _test_hypothesis_between_feature_normal(cls, group1: pd.Series, group2: pd.Series,
+                                               homogeneity_variances: bool = True, independence: bool = True,
+                                               a: float = 0.05, min_stc: float = 0.08) -> bool:
+        """
+            Computes paired_t_test and unpaired_t_test. By default, that groups have homogeneity variances and independence.
+            :param group1:
+            :param group2:
+            :param homogeneity_variances:if groups have a homogeneity variance (== or very close)
+            :independence:The observations between the two groups should also be independent of each other.
+            :param a:significance level
+            :param min_stc:minium acceptable statistical value
+            :return:True if hypothesis is H1 (null is to be rejected), False otherwise
+        """
+
+        if homogeneity_variances:
+            statistic, p_value = cls.paired_t_test(group1, group2)
+            result = cls.validate_hypothesis("paired_t_test", statistic, p_value, a=a, min_stc=min_stc)
+
+            if independence:
+                statistic, p_value = cls.unpaired_t_test(group1, group2)
+                r = cls.validate_hypothesis("unpaired_t_test", statistic, p_value, a=a, min_stc=min_stc)
+                result = result and r
+            else:
+                print("Group do not have the necessary pre-requirement independence")
+
+            return result
+        else:
+            print("Group do not have the necessary pre-requirement homogeneity variances")
+            return False
+
+    @classmethod
+    def _test_hypothesis_between_feature_independent_of_dist(cls, group1: any, group2: any,
+                                               homogeneity_variances: bool = True, independence: bool = True,
+                                               a: float = 0.05, min_stc: float = 0.08) -> bool:
+        """
+            Computes paired_t_test and unpaired_t_test. By default, that groups have homogeneity variances and independence.
+            :param group1:
+            :param group2:
+            :param homogeneity_variances:if groups have a homogeneity variance (== or very close)
+            :independence:The observations between the two groups should also be independent of each other.
+            :param a:significance level
+            :param min_stc:minium acceptable statistical value
+            :return:True if hypothesis is H1 (null is to be rejected), False otherwise
+        """
+
+        if independence:
+            statistic, p_value = cls.wilcoxon_ranksum_test(group1, group2)
+            reject = cls.validate_hypothesis("wilcoxon_ranksum_test ", statistic, p_value, a=a, min_stc=min_stc)
+        else:
+            print("Groups do not have the necessary pre-requirements for wilcoxon ranksum test")
+            reject = True
+
+        if homogeneity_variances:
+            statistic, p_value = cls.wilcoxon_signedrank_test(group1, group2)
+            r = cls.validate_hypothesis("wilcoxon_signedrank_test", statistic, p_value, a=a, min_stc=min_stc)
+            reject = reject and r
+        else:
+            print("Groups do not have the necessary pre-requirements for wilcoxon signedrank test")
+
+        return reject
+
+    @classmethod
+    def validate_hypothesis(cls, test_name: str, statistic: float, p_value: float, a=0.05, min_stc=0.80) -> bool:
+        """
+            :param test_name:
+            :param p_value:
+            :param statistic:statistic value
+            :param a:significance level
+            :param min_stc:minium acceptable statistical value
+            :return:True if validate_p_value and validate_statistical_value are true
+        """
+        print(f"Test: {test_name}")
+        print(f"std:{statistic} p-value:{p_value}")
+        return cls.validate_p_value(p_value, a) and cls.validate_statistical_value(statistic, min_stc)
+
+    @classmethod
+    def validate_p_value(cls,p_value, a=0.05) -> bool:
+        """
+            Compares p_value with the significance level.
+            :param p_value:
+            :param a:significance_level
+            :return Boolean:True (H1) if the null hypothesis is to be rejected
+                            or False (H0) if the null hypothesis is not to be rejected
+                            If the p-value is less than or equal to α, you can reject the null hypothesis. Similarly,
+                            if the null hypothesis is greater than α, you can fail to reject the null hypothesis.
+
+
+        """
+        return p_value <= a
+
+    @classmethod
+    def validate_statistical_value(cls, statistic, min_stc=0.8) -> bool:
+        """
+            Compares statistic with min_acceptable_statistical_value
+            :param statistic:
+            :param min_stc:minium acceptable statistical value
+            :return Boolean:
+                True (H1) if the null hypothesis is to be rejected
+                or False (H0) if the null hypothesis is not to be rejected
+        """
+        return statistic >= min_stc
+
+    @classmethod
+    def divide_series_in_groups_by_class(cls, data_analise: DataAnalysis, feature: str):
+        """
+            :param feature:
+            :param data_analise:
+            :return list of series: Each list element is a group of elements that belongs to the same class
+        """
+
+        groups = list()
+        groups_names = list()
+
+        for _class in data_analise.target_classes:
+            group_data = data_analise.dataset[data_analise.dataset[data_analise.target_name] == _class]
+            groups.append(group_data[feature])
+            name = f"f:{feature} class:{_class}"
+            groups_names.append(name)
+
+        return groups, groups_names
+
+    @classmethod
+    def unpaired_t_test(cls, group1, group2):
         """
         Perform unpaired t-test for two groups.
 
@@ -30,7 +316,8 @@ class HypothesisTester:
         t_statistic, p_value = ttest_ind(group1, group2)
         return t_statistic, p_value
 
-    def unpaired_anova(self, *groups):
+    @classmethod
+    def unpaired_anova(cls, *groups):
         """
         Perform unpaired ANOVA for more than two groups.
 
@@ -45,7 +332,8 @@ class HypothesisTester:
         f_statistic, p_value = f_oneway(*groups)
         return f_statistic, p_value
 
-    def paired_t_test(self, group1, group2):
+    @classmethod
+    def paired_t_test(cls, group1, group2):
         """
         Perform paired t-test for two groups.
 
@@ -61,7 +349,8 @@ class HypothesisTester:
         t_statistic, p_value = ttest_rel(group1, group2)
         return t_statistic, p_value
 
-    def paired_anova(self, data):
+    @classmethod
+    def paired_anova(cls, data):
         """
         Perform paired ANOVA (repeated measures ANOVA) for more than two groups.
 
@@ -76,7 +365,8 @@ class HypothesisTester:
         anova_table = sm.stats.anova_lm(model, typ=2)
         return anova_table['F'][0], anova_table['PR(>F)'][0]
 
-    def wilcoxon_ranksum_test(self, group1, group2):
+    @classmethod
+    def wilcoxon_ranksum_test(cls, group1, group2):
         """
         Perform Wilcoxon rank-sum test (Mann-Whitney U test) for two independent samples.
 
@@ -92,7 +382,8 @@ class HypothesisTester:
 
         return statistic, p_value
 
-    def wilcoxon_signedrank_test(self, group1, group2):
+    @classmethod
+    def wilcoxon_signedrank_test(cls, group1, group2):
         """
         Perform Wilcoxon signed-rank test for paired samples.
         Defines the alternative hypothesis with ‘greater’ option, this the distribution underlying d is stochastically
@@ -108,10 +399,11 @@ class HypothesisTester:
         - statistic: The calculated test statistic.
         - p_value: The p-value associated with the test statistic.
         """
-        statistic, p_value = wilcoxon(group1, group2, alternative="greater")
+        statistic, p_value = wilcoxon(x=group1, y=group2, alternative="greater")
         return statistic, p_value
 
-    def kruskal_wallis_test(self, *groups):
+    @classmethod
+    def kruskal_wallis_test(cls, *groups):
         """
         Perform Kruskal-Wallis H test for independent samples.
 
@@ -126,7 +418,8 @@ class HypothesisTester:
         statistic, p_value = kruskal(*groups)
         return statistic, p_value
 
-    def friedman_test(self, *groups):
+    @classmethod
+    def friedman_test(cls, *groups):
         """
         Perform Friedman test for related samples.
 
@@ -141,7 +434,8 @@ class HypothesisTester:
         statistic, p_value = friedmanchisquare(*groups)
         return statistic, p_value
 
-    def qq_plots(self, variable_names, *data_samples, distribution='norm'):
+    @classmethod
+    def qq_plots(cls, variable_names, *data_samples, distribution='norm'):
         """
         Generate Q-Q plots for multiple data samples.
 
@@ -173,7 +467,8 @@ class HypothesisTester:
         plt.tight_layout()
         plt.show()
 
-    def test_normality(self, variable_names, *data_samples):
+    @classmethod
+    def test_normality(cls, variable_names, *data_samples):
         """
         Test the normality of multiple data samples using Shapiro-Wilk test.
 
@@ -193,11 +488,3 @@ class HypothesisTester:
             print(f'{variable_name}:')
             print(f'Shapiro-Wilk test - Test statistic: {shapiro_result.statistic}, p-value: {shapiro_result.pvalue}')
         return results
-
-
-# Initialize the HypothesisTester class with the data
-#tester = HypothesisTester()
-
-# Perform normality analysis, first by visual checking using a Q-Q plot and then by normality test
-#tester.qq_plots()
-#tester.test_normality()

@@ -1,14 +1,40 @@
 import numpy as np
 import pandas as pd
-from DataAnalysis import DataAnalysis
+from mrmr import mrmr_classif
+from sklearn.feature_selection import SequentialFeatureSelector
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
 
-class FeatureEngineering:
+class FeatureExtraction:
     """
         TODO: add docstring
     """
 
     categories = {"Very Low": 1, "Low": 2, "Medium": 3, "High": 4, "Very High": 5}
+
+    @classmethod
+    def equalize_categories(cls, _list: list):
+        """
+            :param _list:
+            :return list:With all array with the same len
+        """
+
+        min_length = -1
+        for array in _list:
+            if len(array) <= min_length or min_length == -1:
+                min_length = len(array)
+
+        l = list()
+        for i, array in enumerate(_list):
+            if len(array) != min_length:
+                random_numbers = np.random.choice(array, size=min_length, replace=False)
+                l.append(random_numbers)
+            else:
+                l.append(array)
+
+        return l
+
+
 
     @classmethod
     def _create_default_features(cls, dataset: pd.DataFrame) -> pd.DataFrame:
@@ -55,7 +81,7 @@ class FeatureEngineering:
         )
 
         dataset['Column_test_4'] = (
-                dataset["baseline value"] * dataset["uterine_contractions"]
+            dataset["baseline value"] * dataset["uterine_contractions"]
         )
 
         dataset['Column_test_5'] = (
@@ -67,7 +93,7 @@ class FeatureEngineering:
         # )
 
         dataset['Column_test_9'] = (
-             (dataset['uterine_contractions'] * dataset["histogram_number_of_peaks"])
+            (dataset['uterine_contractions'] * dataset["histogram_number_of_peaks"])
         )
 
         # Interaction between "Fetal Movement" and "accelerations"
@@ -90,7 +116,7 @@ class FeatureEngineering:
         dataset['row_kurtosis'] = dataset.kurtosis(axis=1)
 
         # Sum of each line
-        dataset['sum_rows'] = dataset.iloc[:, :-1].sum(axis=1)
+        dataset['sum_rows'] = dataset.iloc[:, :].sum(axis=1)
 
         return dataset
 
@@ -107,18 +133,16 @@ class FeatureEngineering:
         # Define the bins and labels for the categorical binning
         accelerations_min = dataset[column_name].min()
         accelerations_max = dataset[column_name].max()
-        accelerations_interval = (accelerations_max - accelerations_min) / len(FeatureEngineering.categories)
+        accelerations_interval = (accelerations_max - accelerations_min) / len(FeatureExtraction.categories)
 
         # Calculating the values that separate the bins
         bins = [accelerations_min]
         while bins[-1] < accelerations_max:
             bins.append(bins[-1] + accelerations_interval)
 
-        print(bins)
-
         # Perform categorical binning for a specific column, e.g., 'accelerations'
         dataset[new_feature_name] = (
-            pd.cut(dataset[column_name], bins=bins, labels=FeatureEngineering.categories,
+            pd.cut(dataset[column_name], bins=bins, labels=FeatureExtraction.categories,
                    include_lowest=True))
 
         # Transform categorical to int starting from 1
@@ -150,3 +174,45 @@ class FeatureEngineering:
             dataset[key] = dataset_targets[key]
 
         return dataset
+
+
+class FeatureSelector:
+    def __init__(self, data, labels):
+        """
+        Initialize the FeatureSelector instance.
+
+        Parameters:
+        - data (numpy.ndarray): The input data array with shape (n_samples, n_features).
+        - labels (numpy.ndarray): The labels array with shape (n_samples,).
+        """
+        self.data = data
+        self.labels = labels
+
+    def select_features_mrmr(self, k=5):
+        """
+        Select features using mRMR (minimum Redundancy Maximum Relevance).
+
+        Parameters:
+        - k (int): The number of features to select. Default is 5.
+
+        Returns:
+        - List: The selected features as a list.
+        """
+        # Return the selected features
+        return mrmr_classif(X=self.data, y=self.labels, K=k)
+
+    def select_features_sequential(self, k=5):
+        """
+        Select features using sequential feature selection with LDA as the classifier.
+
+        Parameters:
+        - k (int): The number of features to select. Default is 5.
+
+        Returns:
+        - numpy.ndarray: The selected features array with shape (n_samples, k).
+        """
+        # Sequential forward feature selection
+        sfs = SequentialFeatureSelector(LinearDiscriminantAnalysis(), n_features_to_select=k,
+                                        direction='forward').fit(self.data, self.labels)
+        # Return the selected features
+        return self.data.loc[:, sfs.get_support()].columns

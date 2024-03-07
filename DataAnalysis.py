@@ -76,6 +76,7 @@ class DataAnalysis:
         self.file = file
         self.dataset = pd.read_csv(self.file)
         self.target_name = target_name
+        self.target_classes = self.dataset[self.target_name].unique()
 
     def get_targets(self):
         """
@@ -101,9 +102,18 @@ class DataAnalysis:
         print("\nDescription")
         self.describe()
         print()
-        print("\nCorrelation")
-       # print(self.dataset.corr())
-        print()
+
+    def show_correlations_heatmap(self,cellsize = 0.5) -> None:
+        """
+            Shows the correlation heatmap of the loaded dataset
+            :return:
+        """
+        correlation_matrix = self.dataset.corr()
+        size = len(self.dataset.columns) * cellsize +2
+        plt.figure(figsize=(size, size))
+        sns.heatmap(correlation_matrix, annot=False, cmap='coolwarm', fmt=".2f" ,center=True)
+        plt.title('Correlation Heatmap')
+        plt.show()
 
     def pre_process(self, ignore: list = []):
         """
@@ -272,10 +282,11 @@ class DataAnalysis:
         """
         return len(self.dataset) * len(self.dataset.columns)
 
-    def plot_features(self, plot_types: list, columns=4, hist_number_of_bars_func=lambda x: 10, plot_size=5) -> None:
+    def plot_features(self,plot_types: list, columns=4, hist_number_of_bars_func=lambda x: 10, plot_size=5 , ignore: list = []) -> None:
         """
             Plot features per class label using matplotlib, and it plots the plot_types specified in plot_types.
 
+            :param ignore: list of features to ingore
             :param plot_types: An array specifying the type of plot to generate for each feature.Supported plot types: All in PlotTypes
             :param columns: Number of features to per row
             :param hist_number_of_bars_func: function that return the number of bins to the histogram based on the data
@@ -297,15 +308,20 @@ class DataAnalysis:
             rows = number_of_features//columns
             number_of_rows = rows if number_of_features % columns == 0 else rows + 1
 
-            fig, axes = plt.subplots(nrows=number_of_rows, ncols=columns, figsize=(rows*plot_size, columns*plot_size))
+            fig, axes = plt.subplots(nrows=number_of_rows, ncols=columns, figsize=(number_of_rows*plot_size, columns*plot_size))
 
-            for i, feature in enumerate(self.dataset.columns):
+            i = 0
+            for feature in self.dataset.columns:
+
+                if feature in ignore:
+                    continue
 
                 # Produce the subplot for each feature
                 # two-dimensional array containing references to each subplot
-                ax = axes[i // columns][i % columns]
+                ax = axes[i // columns ][i % columns]
                 hist_bins = int(hist_number_of_bars_func(self.dataset[feature]))
                 ax.set_title(feature)
+                i += 1
 
                 # for each classification in target draw a graph in the same feature
                 for label in self.dataset[target].unique():
@@ -355,4 +371,5 @@ class DataAnalysis:
             # Adjust layout
             plt.tight_layout()
             # Show plot
+           # plt.savefig('teste.png')
             plt.show()
