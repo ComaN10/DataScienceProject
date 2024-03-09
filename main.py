@@ -57,8 +57,8 @@ if __name__ == '__main__':
     DimensionalityReduction.plot_3d_combinations(10, 15)
     # DimensionalityReduction.plot_projection(DimensionalityReduction.compute_pca(10), "PCA")
     # DimensionalityReduction.plot_projection(DimensionalityReduction.compute_lda(2), "LDA")
-    DimensionalityReduction.plot_projection(DimensionalityReduction.compute_tsne(3,35), "TSNE")
-    DimensionalityReduction.plot_projection(DimensionalityReduction.compute_lle(2,80), "LLE")
+    DimensionalityReduction.plot_projection(DimensionalityReduction.compute_tsne(3,83), "TSNE")
+    DimensionalityReduction.plot_projection(DimensionalityReduction.compute_lle(2,33), "LLE")
     DimensionalityReduction.plot_projection(DimensionalityReduction.compute_umap(2,15,0.4), "UMAP")
     # Perguntas numero de componentes
 

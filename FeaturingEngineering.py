@@ -70,53 +70,45 @@ class FeatureExtraction:
         :return:
         """
 
-        # dataset['Column_test_1'] = (
-        #     dataset["mean_value_of_short_term_variability"] * dataset["abnormal_short_term_variability"])
-        #
-        # dataset['Column_test_2'] = (
-        #     dataset["mean_value_of_long_term_variability"] * dataset["percentage_of_time_with_abnormal_long_term_variability"])
-
-        dataset['Column_test_3'] = (
+        dataset['Baseline_AbnormalVariability'] = (
             dataset["baseline value"] * dataset["abnormal_short_term_variability"]
         )
 
-        dataset['Column_test_4'] = (
+        dataset['Baseline_UterineContractions'] = (
             dataset["baseline value"] * dataset["uterine_contractions"]
         )
 
-        dataset['Column_test_5'] = (
+        dataset['Baseline_Accelerations'] = (
                 dataset["baseline value"] * dataset["accelerations"]
         )
 
-        # dataset['Column_test_6'] = (
-        #         dataset["baseline value"] * dataset["fetal_movement"]
-        # )
-
-        dataset['Column_test_9'] = (
+        dataset['Uterine_ContractionsPeaksHistogram'] = (
             (dataset['uterine_contractions'] * dataset["histogram_number_of_peaks"])
         )
 
         # Interaction between "Fetal Movement" and "accelerations"
-        dataset['interaction_uterine_fetal'] = dataset['uterine_contractions'] * dataset['fetal_movement']
-
+        dataset['Interaction_UterineFeta'] = (
+                dataset['uterine_contractions'] * dataset['fetal_movement']
+        )
         # Interaction between "Fetal Movement" and "accelerations"
-        dataset['interaction_movement_accelerations'] = dataset['fetal_movement'] * dataset['accelerations']
-
+        dataset['Interaction_MovementAccelerations'] = (
+                dataset['fetal_movement'] * dataset['accelerations']
+        )
         # Calculate and store the rolling mean of 'accelerations' with a specified time window.
         time_window = 3
-        dataset['rolling_mean_accelerations'] = dataset['accelerations'].rolling(window=time_window).mean()
+        dataset['Rolling_MeanAccelerations'] = dataset['accelerations'].rolling(window=time_window).mean()
 
         # Calculate the Skewness by row
         # If skewness is greater than 0, indicates that the right tail of the distribution
         # is longer or fatter than the left tail.
         # If it lower than 0 then the right tail is longer or flatter and if 0 is normal distribution
-        dataset['row_skewness'] = dataset.skew(axis=1)
+        dataset['Row_Skewness'] = dataset.skew(axis=1)
 
         # Calculate the Kurtosis by row
-        dataset['row_kurtosis'] = dataset.kurtosis(axis=1)
+        dataset['Row_Kurtosis'] = dataset.kurtosis(axis=1)
 
         # Sum of each line
-        dataset['sum_rows'] = dataset.iloc[:, :].sum(axis=1)
+        dataset['Sum_Rows'] = dataset.iloc[:, :].sum(axis=1)
 
         return dataset
 
