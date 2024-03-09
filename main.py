@@ -85,11 +85,32 @@ if __name__ == '__main__':
     print()
     #H0
     #
+    HypothesisTester.test_hypothesis_single_feature(groups1, group_names1)
+    HypothesisTester.test_hypothesis_single_feature(groups2, group_names2)
+    HypothesisTester.test_hypothesis_single_feature(groups3, group_names3)
     HypothesisTester.test_hypothesis_single_feature(groups4, group_names4)
-
     #resultado contraditorio
     print()
     HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_mean"], "histogram_mean", data_analyze.dataset[data_analyze.target_name], "target", )
-
-
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["accelerations"], "accelerations", data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["fetal_movement"], "fetal_movement", data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["uterine_contractions"], "uterine_contractions", data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["baseline value"], "baseline value", data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["light_decelerations"], "light_decelerations", data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["severe_decelerations"], "severe_decelerations", data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["prolongued_decelerations"], "prolongued_decelerations", data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["uterine_contractions"], "uterine_contractions", data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["abnormal_short_term_variability"], "abnormal_short_term_variability", data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["mean_value_of_short_term_variability"], "mean_value_of_short_term_variability", data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["percentage_of_time_with_abnormal_long_term_variability"], "percentage_of_time_with_abnormal_long_term_variability", data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["mean_value_of_long_term_variability"], "mean_value_of_long_term_variability", data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_width"], "histogram_width",data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_min"], "histogram_min",data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_max"],"histogram_max",data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_number_of_peaks"],"histogram_number_of_peaks",data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_number_of_zeroes"], "histogram_number_of_zeroes", data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_mode"], "histogram_mode", data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_median"], "histogram_median", data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_variance"], "histogram_variance", data_analyze.dataset[data_analyze.target_name], "target", )
+    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_tendency"], "histogram_tendency", data_analyze.dataset[data_analyze.target_name], "target", )
 
