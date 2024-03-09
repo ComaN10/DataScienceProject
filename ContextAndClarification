@@ -40,3 +40,25 @@ histogram_median - Hist Median
 histogram_variance - Hist variance
 histogram_tendency - Histogram trend
 fetal_health - Fetal health: 1 - Normal 2 - Suspect 3 - Pathological
+
+Hypothesis 1:
+Null hypothesis (H0): There is no significant difference in fetal health based on the number of uterine contractions per second.
+Alternative hypothesis (H1): There is a significant difference in fetal health based on the number of uterine contractions per second.
+
+Hypothesis 2:
+Null hypothesis (H0): There is no significant difference in fetal health based on the mean value of short term variability.
+Alternative hypothesis (H1): There is a significant difference in fetal health based on the mean value of short term variability.
+
+Hypothesis 3:
+Null hypothesis (H0): There is no significant difference in fetal health based on the histogram width.
+Alternative hypothesis (H1): There is a significant difference in fetal health based on the histogram width.
+
+Hypothesis 4:
+Null hypothesis (H0): The mean value of baseline fetal heart rate (FHR) does not significantly
+differ between fetuses with normal health and those with pathological health.
+Alternative hypothesis (H1): The mean value of baseline fetal heart rate (FHR) significantly
+differs between fetuses with normal health and those with pathological health.
+
+Hypothesis 5:
+Null hypothesis (H0): There is no significant difference in fetal health based on the histogram mean.
+Alternative hypothesis (H1): There is a significant difference in fetal health based on the histogram mean.

@@ -5,8 +5,6 @@ import itertools
 import math
 import seaborn as sns
 
-#for visualization balancing preservation of both local and global structures
-
 # Plotting
 import matplotlib.pyplot as plt
 pd.set_option('display.max_columns', None)  # Ensure all columns are displayed
@@ -76,6 +74,7 @@ class DataAnalysis:
         self.file = file
         self.dataset = pd.read_csv(self.file)
         self.target_name = target_name
+        self.target_classes = self.dataset[self.target_name].unique()
 
     def get_targets(self):
         """
@@ -83,12 +82,12 @@ class DataAnalysis:
         """
         return self.dataset[self.target_name]
 
-    def save_as_csv(self) -> None:
+    def save_as_csv(self,file) -> None:
         """
             Save the data as a csv file
             :return:
         """
-        self.dataset.to_csv(self.file)
+        self.dataset.to_csv(file)
 
     def show_datainfo(self) -> None:
         """
@@ -101,9 +100,18 @@ class DataAnalysis:
         print("\nDescription")
         self.describe()
         print()
-        print("\nCorrelation")
-       # print(self.dataset.corr())
-        print()
+
+    def show_correlations_heatmap(self, cellsize = 0.5, annot: bool = False) -> None:
+        """
+            Shows the correlation heatmap of the loaded dataset
+            :return:
+        """
+        correlation_matrix = self.dataset.corr()
+        size = len(self.dataset.columns) * cellsize +2
+        plt.figure(figsize=(size, size))
+        sns.heatmap(correlation_matrix, annot=annot, cmap='coolwarm', fmt=".2f")
+        plt.title('Correlation Heatmap')
+        plt.show()
 
     def pre_process(self, ignore: list = []):
         """
@@ -170,7 +178,49 @@ class DataAnalysis:
             std = self.dataset[column].std()
             self.dataset[column] = (self.dataset[column] - mean) / std
 
-    def identify_outliers(self,ignore: list = [], outliers=1.5, severe_outliers=3.0) -> pd.DataFrame:
+
+    def identify_outliers_Z_Score(self, threshold = float, ignore: list = []) -> (int,pd.DataFrame):
+        """
+            Caluculades the outliers with z score
+            :param threshold: threshold for z-score comparation
+            :param ignore: list of columns to ignore outliers
+            :return outliers,severe_outliers,dataFrame:
+                outliers: number of outliers
+                severe_outliers: number of severe outliers
+                dict: a dicionary containing an lits of dicionarys {"i":i, "value":value ,"severe"} per feature of the dataset
+                    that are outliers
+        """
+        dict = {}
+        count_outliers = 0
+        count_outliers_severe = 0
+        for column in self.dataset.columns:
+
+            if (column in ignore):
+                continue
+
+            #calculate feature mean and std
+            std = self.dataset[column].std()
+            mean = self.dataset[column].mean()
+
+            #verify each value
+            column_name = column + "_ouliers"
+            dict[column_name] = list()
+
+            i = 0
+            for value in self.dataset[column]:
+
+                # check if it is outliers
+                z_score = (value - mean) / std
+                if np.abs(value) >= threshold  :
+                    count_outliers += 1
+                    # check if it is severe
+                    dict[column_name].append({"i": i, "value": value, "severe": True})
+                i += 1
+
+
+        return count_outliers, dict
+
+    def identify_outliers(self,ignore: list = [], outliers=1.5, severe_outliers=3.0) -> (int,int,pd.DataFrame):
         """
             Identifies outliers in the loaded DataFrame
             :param ignore: list of columns to ignore outliers
@@ -218,7 +268,7 @@ class DataAnalysis:
 
         return count_outliers,count_outliers_severe,dict
 
-    def print_outliers_info(self,ignore: list = [], outliers=1.5, severe_outliers=3.0) -> None:
+    def print_outliers_info(self,ignore: list = [], outliers=1.5, severe_outliers=3.0, threshold=3) -> None:
         """
             Calculates and prints out the outliers
             Identifies outliers in the loaded DataFrame
@@ -228,11 +278,24 @@ class DataAnalysis:
             :return None:
         """
 
+        print("Number of outliers with interquertile range!")
         outliers, severe_outliers, data = self.identify_outliers(ignore=ignore, outliers=outliers, severe_outliers=severe_outliers)
         print("number of outliers: ", outliers, " of " , self.getNumberOfValues() ,
               " ", (outliers/self.getNumberOfValues()) * 100  , " %" , " severe: ", severe_outliers)
         for key in data.keys():
-            print( key, len(data[key]) )
+            severe = 0
+            for outlier in data[key]:
+                if outlier["severe"]:
+                    severe +=1
+            print( key, len(data[key]) , "severe: " , severe )
+        print()
+
+        print("Number of outliers with z score!")
+        outliers, data = self.identify_outliers_Z_Score(ignore=ignore, threshold=threshold)
+        print("number of outliers: ", outliers, " of ", self.getNumberOfValues(),
+              " ", (outliers / self.getNumberOfValues()) * 100, " %")
+        for key in data.keys():
+            print(key, len(data[key]))
         print()
 
 
@@ -272,10 +335,11 @@ class DataAnalysis:
         """
         return len(self.dataset) * len(self.dataset.columns)
 
-    def plot_features(self, plot_types: list, columns=4, hist_number_of_bars_func=lambda x: 10, plot_size=5) -> None:
+    def plot_features(self,plot_types: list, columns=4, hist_number_of_bars_func=lambda x: 10, plot_size=5 , ignore: list = []) -> None:
         """
             Plot features per class label using matplotlib, and it plots the plot_types specified in plot_types.
 
+            :param ignore: list of features to ingore
             :param plot_types: An array specifying the type of plot to generate for each feature.Supported plot types: All in PlotTypes
             :param columns: Number of features to per row
             :param hist_number_of_bars_func: function that return the number of bins to the histogram based on the data
@@ -297,15 +361,20 @@ class DataAnalysis:
             rows = number_of_features//columns
             number_of_rows = rows if number_of_features % columns == 0 else rows + 1
 
-            fig, axes = plt.subplots(nrows=number_of_rows, ncols=columns, figsize=(rows*plot_size, columns*plot_size))
+            fig, axes = plt.subplots(nrows=number_of_rows, ncols=columns, figsize=(number_of_rows*plot_size, columns*plot_size))
 
-            for i, feature in enumerate(self.dataset.columns):
+            i = 0
+            for feature in self.dataset.columns:
+
+                if feature in ignore:
+                    continue
 
                 # Produce the subplot for each feature
                 # two-dimensional array containing references to each subplot
-                ax = axes[i // columns][i % columns]
+                ax = axes[i // columns ][i % columns]
                 hist_bins = int(hist_number_of_bars_func(self.dataset[feature]))
                 ax.set_title(feature)
+                i += 1
 
                 # for each classification in target draw a graph in the same feature
                 for label in self.dataset[target].unique():
@@ -355,4 +424,5 @@ class DataAnalysis:
             # Adjust layout
             plt.tight_layout()
             # Show plot
+           # plt.savefig('teste.png')
             plt.show()
