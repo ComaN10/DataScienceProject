@@ -46,11 +46,13 @@ class HypothesisTester:
     @classmethod
     def test_hypothesis_single_feature(cls, groups: list, group_names: list, hypothesis: str = "",
                                        homogeneity_variances: bool = True, similar_distribution: bool = True, independence: bool = True,
-                                       a: float = 0.05) -> bool:
+                                       a: float = 0.05, test_mormality=True, normal: bool = False) -> (bool, bool):
         """
             Uses the corresponding hypothesis tests according to the normality tests.
             :param groups:
             :param group_names:
+            :param test_mormality:
+            :param normal:if is normal
             :param hypothesis:String with the hypothesis
             :param homogeneity_variances:if groups have a homogeneity variance (== or very close)
             :param similar_distribution:if groups have a similar distribution (== or very close)
@@ -62,14 +64,16 @@ class HypothesisTester:
         hypothesis = hypothesis if (len(hypothesis) != 0) else "null hypothesis."
         print(f"Testing {hypothesis}")
 
-        if cls.test_normal_distribution(groups, group_names):
+        normal_test = False
+        if (test_mormality and cls.test_normal_distribution(groups, group_names)) or normal:
+            normal_test = True
             reject = cls._test_hypothesis_single_feature_normal(groups, group_names, homogeneity_variances, similar_distribution, independence, a)
         else:
             reject = cls._test_hypothesis_single_feature_not_normal(groups, homogeneity_variances, independence, a)
 
         result = "Reject" if reject else "Not Reject"
         print(f"{result} the {hypothesis}")
-        return reject
+        return reject, normal_test
 
     @classmethod
     def _test_hypothesis_single_feature_normal(cls, groups: list, groups_names: list, homogeneity_variances: bool = True,
@@ -144,23 +148,27 @@ class HypothesisTester:
     @classmethod
     def test_hypothesis_between_feature(cls, group1: any, group1_name: str, group2: any, group2_name: str, hypothesis: str = "",
                                         homogeneity_variances: bool = True, independence: bool = True,
-                                        a: float = 0.05) -> bool:
+                                        a: float = 0.05, test_normality=True, normal:bool = False) -> (bool, bool):
         """
             :param group1:
             :param group1_name:
             :param group2:
             :param group2_name:
-            :param hypothesis:String with the hypothesis
+            :param test_mormality:
+            :param normal:if is normal
+            :param hypothesis:String with the null hypothesis
             :param homogeneity_variances:if groups have a homogeneity variance (== or very close)
             :param independence:The observations between the two groups should also be independent of each other.
             :param a:
-            :return:True if hypothesis is H1 (null is to be rejected), False otherwise
+            :return:True if hypothesis is H1 (null is to be rejected), False otherwise , normality test result
         """
 
         hypothesis = hypothesis if (len(hypothesis) != 0) else "null hypothesis."
         print(f"Testing {hypothesis}")
 
-        if cls.test_normal_distribution([group1, group2], [group1_name, group2_name]):
+        norm_test = False
+        if (test_normality and cls.test_normal_distribution([group1, group2], [group1_name, group2_name])) or normal:
+            norm_test = True
             reject = cls._test_hypothesis_between_feature_normal(group1, group2, homogeneity_variances, independence, a)
         else:
             reject = True
@@ -171,7 +179,7 @@ class HypothesisTester:
         result = "Reject" if reject else "Not Reject"
         print(f"{result} the {hypothesis}")
 
-        return reject
+        return reject, norm_test
 
     @classmethod
     def _test_hypothesis_between_feature_normal(cls, group1: pd.Series, group2: pd.Series,

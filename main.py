@@ -7,56 +7,89 @@ import numpy as np
 
 if __name__ == '__main__':
 
+    # loading
     data_analyze = DataAnalysis()
 
     data_analyze.pre_process(
-        ignore=[data_analyze.target_name, "accelerations_category", "fetal_movement_category"]
+        ignore=[data_analyze.target_name]
     )
 
-    # creating features #five percent
-    data_analyze.print_outliers_info(
-         ignore=[data_analyze.target_name, "accelerations_category", "fetal_movement_category"], severe_outliers=3
+    data_analyze.show_datainfo()
+
+    data_analyze.plot_features([
+        PlotTypes().hist(),
+        PlotTypes().violin()
+    ], hist_number_of_bars_func=PlotTypes.hist_scots,
+        columns=5,
+        plot_size=5
     )
 
-    data_analyze.dataset = FeatureExtraction.create_features(data_analyze.dataset, [data_analyze.target_name])
+    data_analyze.print_outliers_info(ignore=[data_analyze.target_name])
+
+    data_analyze.plot_features([
+        PlotTypes().box(),
+    ], hist_number_of_bars_func=PlotTypes.hist_scots,
+        columns=5,
+        plot_size=5,
+        ignore=[data_analyze.target_name]
+    )
+
+    print("Feature Creation")
+    new_dataset = FeatureExtraction.create_features(data_analyze.dataset, [data_analyze.target_name])
+    # update principal data_analyze
+    data_analyze.dataset = new_dataset
+
+    # creating a new data_analyze to analyze the created features
+    data_analysis_features_created = DataAnalysis()
+
+    last_18_columns = new_dataset.columns[-18:]
+    data_analysis_features_created.dataset = new_dataset[last_18_columns]
+
+    data_analysis_features_created.remove_duplicates()
+    data_analysis_features_created.remove_null_values()
+    data_analysis_features_created.show_datainfo()
+
+    # Distribution Analyses
+    data_analysis_features_created.plot_features([
+        PlotTypes().hist()
+    ], hist_number_of_bars_func=PlotTypes.hist_scots,
+        columns=5,
+        plot_size=5)
+
+    data_analysis_features_created.plot_features([
+        PlotTypes().violin()
+    ], hist_number_of_bars_func=PlotTypes.hist_scots,
+        columns=5,
+        plot_size=5
+    )
+
+    # Outliers
+    data_analysis_features_created.print_outliers_info(
+        ignore=[data_analyze.target_name, "accelerations_category", "fetal_movement_category"])
+
+    data_analysis_features_created.plot_features([
+        PlotTypes().box(),
+    ], hist_number_of_bars_func=PlotTypes.hist_scots,
+        columns=4,
+        plot_size=5,
+        ignore=[data_analysis_features_created.target_name, "accelerations_category", "fetal_movement_category"]
+    )
+
+    data_analyze.remove_null_values()
+    data_analyze.remove_duplicates()
+
     # wheel print 253 graphs
     # #data_analyze.view_features_pairwyse()´
     # data_analyze = DataAnalysis()
     # data_analyze.show_datainfo()
     # data_analyze.plot_features([PlotTypes().hist()]
 
-    data_analyze.remove_null_values()
-    data_analyze.remove_duplicates()
-    # principal
+    data_analyze.show_correlations_heatmap(1, True)
 
-    data_analyze.remove_duplicates()
-    data_analyze.remove_null_values()
+    # Dimensional reduction
+    pca_analysis = PCAAnalysis(data_analyze.dataset, data_analyze.get_targets(), len(data_analyze.dataset.columns))
+    pca_analysis.plot_explained_variance_ratio()
 
-    data_analyze.pre_process(
-        ignore=[data_analyze.target_name, "accelerations_category", "fetal_movement_category"]
-    )
-    #data_analyze.show_datainfo()
-    data_analyze.show_correlations_heatmap()
-
-    data_analyze.show_datainfo()
-
-    data_analyze.plot_features([
-        PlotTypes().hist(),
-        #PlotTypes().violin(),
-        #PlotTypes().box(),
-        #PlotTypes().scatter(),
-        # PlotTypes().lines(), is not usefully
-        #PlotTypes().bar(),
-        #PlotTypes().lollypop()
-        ], hist_number_of_bars_func=PlotTypes.hist_scots,
-        columns=6,
-        plot_size=5 #,
-        #ignore=["accelerations_category", "fetal_movement_category"]
-        )
-
-    p = PCAAnalysis(data_analyze.dataset, data_analyze.get_targets(), 39)
-    p.plot_explained_variance_ratio()
-    #
     DimensionalityReduction = DimensionalityReduction(data_analyze.dataset, data_analyze.get_targets(), standardized=True)
     DimensionalityReduction.plot_3d_combinations(10, 15)
     DimensionalityReduction.plot_projection(DimensionalityReduction.compute_pca(14), "PCA")
@@ -64,53 +97,41 @@ if __name__ == '__main__':
     DimensionalityReduction.plot_projection(DimensionalityReduction.compute_tsne(3,83), "TSNE")
     DimensionalityReduction.plot_projection(DimensionalityReduction.compute_lle(2,33), "LLE")
     DimensionalityReduction.plot_projection(DimensionalityReduction.compute_umap(2,15,0.4), "UMAP")
-    # Perguntas numero de componentes
 
-    # graficons no relatorio?
-    # escolha do modelo?
+    # Feature selection
+    featureSelector = FeatureSelector(data_analyze.dataset, data_analyze.get_targets())
+    featureSelector.select_features_mrmr(5)
 
-    # Hypothesis 5:
-    # Null hypothesis (H0): There is no significant difference in fetal health based on the histogram mean.
-    # Alternative hypothesis (H1): There is a significant difference in fetal health based on the histogram mean.
-
-    groups1, group_names1 = HypothesisTester.divide_series_in_groups_by_class(data_analyze, "accelerations")
-    groups2, group_names2 = HypothesisTester.divide_series_in_groups_by_class(data_analyze, "fetal_movement")
-    groups3, group_names3 = HypothesisTester.divide_series_in_groups_by_class(data_analyze, "uterine_contractions")
-    groups4, group_names4 = HypothesisTester.divide_series_in_groups_by_class(data_analyze, "histogram_mean")
-    groups = groups1 + groups2
-    group_names = group_names1 + group_names2
-
-    groups4 = FeatureExtraction.equalize_categories(groups4)
-
+    # Hypothesis test
     print()
-    #H0
-    #
-    HypothesisTester.test_hypothesis_single_feature(groups1, group_names1)
-    HypothesisTester.test_hypothesis_single_feature(groups2, group_names2)
-    HypothesisTester.test_hypothesis_single_feature(groups3, group_names3)
-    HypothesisTester.test_hypothesis_single_feature(groups4, group_names4)
-    #resultado contraditorio
-    print()
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_mean"], "histogram_mean", data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["accelerations"], "accelerations", data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["fetal_movement"], "fetal_movement", data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["uterine_contractions"], "uterine_contractions", data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["baseline value"], "baseline value", data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["light_decelerations"], "light_decelerations", data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["severe_decelerations"], "severe_decelerations", data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["prolongued_decelerations"], "prolongued_decelerations", data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["uterine_contractions"], "uterine_contractions", data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["abnormal_short_term_variability"], "abnormal_short_term_variability", data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["mean_value_of_short_term_variability"], "mean_value_of_short_term_variability", data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["percentage_of_time_with_abnormal_long_term_variability"], "percentage_of_time_with_abnormal_long_term_variability", data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["mean_value_of_long_term_variability"], "mean_value_of_long_term_variability", data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_width"], "histogram_width",data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_min"], "histogram_min",data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_max"],"histogram_max",data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_number_of_peaks"],"histogram_number_of_peaks",data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_number_of_zeroes"], "histogram_number_of_zeroes", data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_mode"], "histogram_mode", data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_median"], "histogram_median", data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_variance"], "histogram_variance", data_analyze.dataset[data_analyze.target_name], "target", )
-    HypothesisTester.test_hypothesis_between_feature(data_analyze.dataset["histogram_tendency"], "histogram_tendency", data_analyze.dataset[data_analyze.target_name], "target", )
 
+    lst_results = list()
+    for feature in data_analyze.dataset.columns:
+
+        h0 = f"H0 Entre {feature} e target não existe uma diferença significativa"
+        print(h0)
+        print(f"H1 Entre {feature} e target existe uma diferença significativa")
+
+        result, normal_result = HypothesisTester.test_hypothesis_between_feature(
+            data_analyze.dataset["histogram_mean"], "histogram_mean",
+            data_analyze.dataset[data_analyze.target_name], "target",
+            hypothesis=h0
+        )
+        lst_results.append({"H": h0, "result": result})
+
+        print("\n")
+
+        h0 = f"H0 Entre classes na variável {feature} não existe uma diferença significativa"
+        print(h0)
+        print(f"H1 Entre classes na variável {feature} existe uma diferença significativa")
+
+        groups, group_names = HypothesisTester.divide_series_in_groups_by_class(data_analyze, "light_decelerations")
+        result, normal_result = HypothesisTester.test_hypothesis_single_feature(groups, group_names, hypothesis=h0,test_mormality=False,normal=normal_result)
+
+        lst_results.append({"H": h0, "result": result})
+
+        print("---------------------------------------------------------------------",end="\n\n\n\n")
+
+    # True is reject , show results
+    for dic in lst_results:
+        print(f"{dic['H']} result {dic['result']}")
