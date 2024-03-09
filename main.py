@@ -27,14 +27,18 @@ if __name__ == '__main__':
 
     data_analyze.remove_null_values()
     data_analyze.remove_duplicates()
+    # principal
 
-
+    data_analyze.remove_duplicates()
+    data_analyze.remove_null_values()
 
     data_analyze.pre_process(
         ignore=[data_analyze.target_name, "accelerations_category", "fetal_movement_category"]
     )
     #data_analyze.show_datainfo()
     data_analyze.show_correlations_heatmap()
+
+    data_analyze.show_datainfo()
 
     data_analyze.plot_features([
         PlotTypes().hist(),
@@ -55,8 +59,8 @@ if __name__ == '__main__':
     #
     DimensionalityReduction = DimensionalityReduction(data_analyze.dataset, data_analyze.get_targets(), standardized=True)
     DimensionalityReduction.plot_3d_combinations(10, 15)
-    # DimensionalityReduction.plot_projection(DimensionalityReduction.compute_pca(10), "PCA")
-    # DimensionalityReduction.plot_projection(DimensionalityReduction.compute_lda(2), "LDA")
+    DimensionalityReduction.plot_projection(DimensionalityReduction.compute_pca(14), "PCA")
+    DimensionalityReduction.plot_projection(DimensionalityReduction.compute_lda(2), "LDA")
     DimensionalityReduction.plot_projection(DimensionalityReduction.compute_tsne(3,83), "TSNE")
     DimensionalityReduction.plot_projection(DimensionalityReduction.compute_lle(2,33), "LLE")
     DimensionalityReduction.plot_projection(DimensionalityReduction.compute_umap(2,15,0.4), "UMAP")
@@ -79,6 +83,7 @@ if __name__ == '__main__':
     groups4 = FeatureExtraction.equalize_categories(groups4)
 
     print()
+    #H0
     #
     HypothesisTester.test_hypothesis_single_feature(groups4, group_names4)
 

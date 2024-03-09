@@ -101,7 +101,7 @@ class DataAnalysis:
         self.describe()
         print()
 
-    def show_correlations_heatmap(self,cellsize = 0.5) -> None:
+    def show_correlations_heatmap(self, cellsize = 0.5, annot: bool = False) -> None:
         """
             Shows the correlation heatmap of the loaded dataset
             :return:
@@ -109,7 +109,7 @@ class DataAnalysis:
         correlation_matrix = self.dataset.corr()
         size = len(self.dataset.columns) * cellsize +2
         plt.figure(figsize=(size, size))
-        sns.heatmap(correlation_matrix, annot=False, cmap='coolwarm', fmt=".2f")
+        sns.heatmap(correlation_matrix, annot=annot, cmap='coolwarm', fmt=".2f")
         plt.title('Correlation Heatmap')
         plt.show()
 
