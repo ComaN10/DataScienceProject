@@ -178,7 +178,49 @@ class DataAnalysis:
             std = self.dataset[column].std()
             self.dataset[column] = (self.dataset[column] - mean) / std
 
-    def identify_outliers(self,ignore: list = [], outliers=1.5, severe_outliers=3.0) -> pd.DataFrame:
+
+    def identify_outliers_Z_Score(self, threshold = float, ignore: list = []) -> (int,pd.DataFrame):
+        """
+            Caluculades the outliers with z score
+            :param threshold: threshold for z-score comparation
+            :param ignore: list of columns to ignore outliers
+            :return outliers,severe_outliers,dataFrame:
+                outliers: number of outliers
+                severe_outliers: number of severe outliers
+                dict: a dicionary containing an lits of dicionarys {"i":i, "value":value ,"severe"} per feature of the dataset
+                    that are outliers
+        """
+        dict = {}
+        count_outliers = 0
+        count_outliers_severe = 0
+        for column in self.dataset.columns:
+
+            if (column in ignore):
+                continue
+
+            #calculate feature mean and std
+            std = self.dataset[column].std()
+            mean = self.dataset[column].mean()
+
+            #verify each value
+            column_name = column + "_ouliers"
+            dict[column_name] = list()
+
+            i = 0
+            for value in self.dataset[column]:
+
+                # check if it is outliers
+                z_score = (value - mean) / std
+                if np.abs(value) >= threshold  :
+                    count_outliers += 1
+                    # check if it is severe
+                    dict[column_name].append({"i": i, "value": value, "severe": True})
+                i += 1
+
+
+        return count_outliers, dict
+
+    def identify_outliers(self,ignore: list = [], outliers=1.5, severe_outliers=3.0) -> (int,int,pd.DataFrame):
         """
             Identifies outliers in the loaded DataFrame
             :param ignore: list of columns to ignore outliers
@@ -226,7 +268,7 @@ class DataAnalysis:
 
         return count_outliers,count_outliers_severe,dict
 
-    def print_outliers_info(self,ignore: list = [], outliers=1.5, severe_outliers=3.0) -> None:
+    def print_outliers_info(self,ignore: list = [], outliers=1.5, severe_outliers=3.0, threshold=3) -> None:
         """
             Calculates and prints out the outliers
             Identifies outliers in the loaded DataFrame
@@ -236,11 +278,24 @@ class DataAnalysis:
             :return None:
         """
 
+        print("Number of outliers with interquertile range!")
         outliers, severe_outliers, data = self.identify_outliers(ignore=ignore, outliers=outliers, severe_outliers=severe_outliers)
         print("number of outliers: ", outliers, " of " , self.getNumberOfValues() ,
               " ", (outliers/self.getNumberOfValues()) * 100  , " %" , " severe: ", severe_outliers)
         for key in data.keys():
-            print( key, len(data[key]) )
+            severe = 0
+            for outlier in data[key]:
+                if outlier["severe"]:
+                    severe +=1
+            print( key, len(data[key]) , "severe: " , severe )
+        print()
+
+        print("Number of outliers with z score!")
+        outliers, data = self.identify_outliers_Z_Score(ignore=ignore, threshold=threshold)
+        print("number of outliers: ", outliers, " of ", self.getNumberOfValues(),
+              " ", (outliers / self.getNumberOfValues()) * 100, " %")
+        for key in data.keys():
+            print(key, len(data[key]))
         print()
 
 

@@ -18,15 +18,15 @@ if __name__ == '__main__':
          ignore=[data_analyze.target_name, "accelerations_category", "fetal_movement_category"], severe_outliers=3
     )
 
-    data_analyze.remove_null_values()
-    data_analyze.remove_duplicates()
-
     data_analyze.dataset = FeatureExtraction.create_features(data_analyze.dataset, [data_analyze.target_name])
     # wheel print 253 graphs
     # #data_analyze.view_features_pairwyse()´
     # data_analyze = DataAnalysis()
     # data_analyze.show_datainfo()
     # data_analyze.plot_features([PlotTypes().hist()]
+
+    data_analyze.remove_null_values()
+    data_analyze.remove_duplicates()
 
 
 
@@ -35,7 +35,6 @@ if __name__ == '__main__':
     )
     #data_analyze.show_datainfo()
     data_analyze.show_correlations_heatmap()
-
 
     data_analyze.plot_features([
         PlotTypes().hist(),
@@ -80,6 +79,7 @@ if __name__ == '__main__':
     groups4 = FeatureExtraction.equalize_categories(groups4)
 
     print()
+    #
     HypothesisTester.test_hypothesis_single_feature(groups4, group_names4)
 
     #resultado contraditorio
