@@ -54,14 +54,14 @@ if __name__ == '__main__':
     p = PCAAnalysis(data_analyze.dataset, data_analyze.get_targets(), 39)
     p.plot_explained_variance_ratio()
     #
-    # DimensionalityReduction = DimensionalityReduction(data_analyze.dataset, data_analyze.get_targets(), standardized=True)
-    # DimensionalityReduction.plot_3d_combinations(10, 15)
-    # DimensionalityReduction.plot_projection(DimensionalityReduction.compute_pca(), "PCA") #expla..
+    DimensionalityReduction = DimensionalityReduction(data_analyze.dataset, data_analyze.get_targets(), standardized=True)
+    DimensionalityReduction.plot_3d_combinations(10, 15)
+    # DimensionalityReduction.plot_projection(DimensionalityReduction.compute_pca(10), "PCA")
     # DimensionalityReduction.plot_projection(DimensionalityReduction.compute_lda(2), "LDA")
-    # DimensionalityReduction.plot_projection(DimensionalityReduction.compute_tsne(3), "TSNE")
-    # DimensionalityReduction.plot_projection(DimensionalityReduction.compute_lle(2), "LLE")
-    # DimensionalityReduction.plot_projection(DimensionalityReduction.compute_umap(2), "UMAP")
-    # # Perguntas numero de componentes
+    DimensionalityReduction.plot_projection(DimensionalityReduction.compute_tsne(3,35), "TSNE")
+    DimensionalityReduction.plot_projection(DimensionalityReduction.compute_lle(2,80), "LLE")
+    DimensionalityReduction.plot_projection(DimensionalityReduction.compute_umap(2,15,0.4), "UMAP")
+    # Perguntas numero de componentes
 
     # graficons no relatorio?
     # escolha do modelo?
