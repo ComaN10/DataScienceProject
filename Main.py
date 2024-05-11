@@ -90,17 +90,31 @@ if __name__ == '__main__':
     pca_analysis = PCAAnalysis(data_analyze.dataset, data_analyze.get_targets(), len(data_analyze.dataset.columns))
     pca_analysis.plot_explained_variance_ratio()
 
-    DimensionalityReduction = DimensionalityReduction(data_analyze.dataset, data_analyze.get_targets(), standardized=True)
-    DimensionalityReduction.plot_3d_combinations(10, 15)
-    DimensionalityReduction.plot_projection(DimensionalityReduction.compute_pca(14), "PCA")
+    # saving dataset
+    data_analyze.save_as_csv("Complete_treated_dataset")
+
+    dataset_targets = data_analyze.get_targets()
+    dataset_without_target = data_analyze.dataset.drop(columns=[data_analyze.target_name])
+
+    featureSelector = FeatureSelector(dataset_without_target, dataset_targets)
+    result_mmr = featureSelector.select_features_mrmr(5)
+
+    # saving data
+    np.save("Complete_treated_reduction_mmr.npy", result_mmr)
+
+    DimensionalityReduction = DimensionalityReduction(dataset_without_target, dataset_targets, standardized=True)
+    # DimensionalityReduction.plot_3d_combinations(10, 15)
+    pca_result = DimensionalityReduction.compute_pca(14)
+    np.save("Complete_treated_reduction_pca.npy", pca_result)
+
+    # merge dataset
+    data_analyze.dataset[data_analyze.target_name] = dataset_targets
+
+    DimensionalityReduction.plot_projection(pca_result, "PCA")
     DimensionalityReduction.plot_projection(DimensionalityReduction.compute_lda(2), "LDA")
     DimensionalityReduction.plot_projection(DimensionalityReduction.compute_tsne(3,83), "TSNE")
     DimensionalityReduction.plot_projection(DimensionalityReduction.compute_lle(2,33), "LLE")
     DimensionalityReduction.plot_projection(DimensionalityReduction.compute_umap(2,15,0.4), "UMAP")
-
-    # Feature selection
-    featureSelector = FeatureSelector(data_analyze.dataset, data_analyze.get_targets())
-    featureSelector.select_features_mrmr(5)
 
     # Hypothesis test
     print()
@@ -135,3 +149,7 @@ if __name__ == '__main__':
     # True is reject , show results
     for dic in lst_results:
         print(f"{dic['H']} result {dic['result']}")
+
+
+
+
