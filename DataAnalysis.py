@@ -424,5 +424,4 @@ class DataAnalysis:
             # Adjust layout
             plt.tight_layout()
             # Show plot
-           # plt.savefig('teste.png')
             plt.show()
