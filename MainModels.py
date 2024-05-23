@@ -118,8 +118,8 @@ creat_model_with_cross_validation("GradientBoostingClassifier_CrossModel",Gradie
 creat_model_without_cross_validation("GradientBoostingClassifier_Model",GradientBoostingClassifier())
 
 print("AdaBoost Classifier Models")
-creat_model_with_cross_validation("GradientBoostingClassifier_CrossModel",AdaBoostClassifier(),Complete_data_X,data_targets_y)
-creat_model_without_cross_validation("GradientBoostingClassifier_Model",AdaBoostClassifier())
+creat_model_with_cross_validation("AdaBoost_CrossModel",AdaBoostClassifier(),Complete_data_X,data_targets_y)
+creat_model_without_cross_validation("AdaBoost_Model",AdaBoostClassifier())
 
 print("Hist Gradient Boosting Classifier Models")
 creat_model_with_cross_validation("HistGradientBoostingClassifier_CrossModel",HistGradientBoostingClassifier(),Complete_data_X,data_targets_y)
