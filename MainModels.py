@@ -150,7 +150,8 @@ print("DBSCAN Models")
 dbscan = DBSCAN(eps=29, min_samples=2)
 dbscan.fit(Complete_data_X_train)
 y_pred = dbscan.fit_predict(Complete_data_X_test)
-print( ConfusionMatrix( actual_vector=np.array(Complete_data_y_test), predict_vector=np.array(y_pred) ) )
+actual_t = Complete_data_y_test-1
+print( ConfusionMatrix( actual_vector=np.array(actual_t), predict_vector=np.array(y_pred) ) )
 
 
 print("Print Neural Network Model")
